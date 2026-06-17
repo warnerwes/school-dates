@@ -35,6 +35,13 @@ var HEADERS = {
   periodSet: '(Time Periods1) Period Set'
 };
 
+// Day-type vocabulary from the real report:
+//   HOL       = holiday / non-instructional day (the authoritative "off" flag)
+//   Schoolday = regular in-session day
+//   ACA       = academic/extended-term in-session day (e.g. summer term)
+// Anything NOT listed here counts as school in session.
+var NON_SCHOOL_TYPES = { HOL: true };
+
 /**
  * Trigger entry point. Fetches, parses, derives, and publishes JSON outputs.
  */
@@ -401,7 +408,7 @@ function buildHolidays_(schoolDays) {
 
   for (var i = 0; i < schoolDays.length; i += 1) {
     var day = schoolDays[i];
-    if (day.date && day.type !== 'Schoolday' && !seen[day.date]) {
+    if (day.date && NON_SCHOOL_TYPES[day.type] && !seen[day.date]) {
       seen[day.date] = true;
       holidays.push(day.date);
     }
@@ -424,13 +431,13 @@ function buildToday_(todayDate, learningPeriods, schoolDays) {
     dayType = todayRecord.type;
   } else if (isWeekend_(todayDate)) {
     dayType = 'Weekend';
-  } else if (!currentLP) {
-    dayType = 'Summer/Break';
+  } else {
+    dayType = 'Unscheduled';
   }
 
   return {
     date: todayDate,
-    isSchoolDay: !!(todayRecord && todayRecord.type === 'Schoolday'),
+    isSchoolDay: !!(todayRecord && !NON_SCHOOL_TYPES[todayRecord.type]),
     currentLP: currentLP ? currentLP.lp : null,
     dayType: dayType
   };
@@ -459,18 +466,45 @@ function buildNextVacation_(todayDate, learningPeriods, schoolDays) {
         end = nextDate;
       }
 
-      return {
-        name: chooseVacationName_(start, end, schoolDayMap),
-        start: start,
-        end: end,
-        daysUntil: diffDays_(todayDate, start)
-      };
+      // Only an extended break counts — a span that takes at least one weekday
+      // (Mon-Fri) off. A bare Saturday+Sunday is a weekend, not a vacation.
+      if (spanHasWeekdayOff_(start, end)) {
+        return {
+          name: chooseVacationName_(start, end, schoolDayMap),
+          start: start,
+          end: end,
+          daysUntil: diffDays_(todayDate, start),
+          weekdaysOff: countWeekdays_(start, end)
+        };
+      }
+      cursor = addDays_(end, 1);
+      continue;
     }
 
     cursor = addDays_(cursor, 1);
   }
 
   return null;
+}
+
+// True if any date in [start,end] is a weekday (Mon-Fri).
+function spanHasWeekdayOff_(start, end) {
+  var cursor = start;
+  while (cursor <= end) {
+    if (!isWeekend_(cursor)) return true;
+    cursor = addDays_(cursor, 1);
+  }
+  return false;
+}
+
+function countWeekdays_(start, end) {
+  var cursor = start;
+  var n = 0;
+  while (cursor <= end) {
+    if (!isWeekend_(cursor)) n += 1;
+    cursor = addDays_(cursor, 1);
+  }
+  return n;
 }
 
 /**
@@ -585,18 +619,28 @@ function dedupeLearningPeriods_(learningPeriods) {
   return deduped;
 }
 
+// Dedupe by date with type precedence: HOL wins (a date flagged off in ANY row
+// is off), else a regular Schoolday, else other in-session types (ACA). The
+// report lists each date under multiple sets with differing types.
+function typeRank_(type) {
+  if (NON_SCHOOL_TYPES[type]) return 3;
+  if (type === 'Schoolday') return 2;
+  return 1;
+}
+
 function dedupeSchoolDays_(schoolDays) {
-  var seen = {};
-  var deduped = [];
+  var byDate = {};
 
   for (var i = 0; i < schoolDays.length; i += 1) {
     var item = schoolDays[i];
-    if (item.date && !seen[item.date]) {
-      seen[item.date] = true;
-      deduped.push(item);
+    if (!item.date) continue;
+    var existing = byDate[item.date];
+    if (!existing || typeRank_(item.type) > typeRank_(existing.type)) {
+      byDate[item.date] = { date: item.date, type: item.type };
     }
   }
 
+  var deduped = Object.keys(byDate).map(function(d) { return byDate[d]; });
   deduped.sort(function(a, b) {
     return compareStrings_(a.date, b.date);
   });
@@ -612,22 +656,21 @@ function buildSchoolDayMap_(schoolDays) {
   return map;
 }
 
+// Non-school if a listed HOL, or not listed at all (weekends and out-of-term
+// gaps are simply absent from the enumerated days).
 function isNonSchoolDate_(dateString, learningPeriods, schoolDayMap) {
   var schoolDay = schoolDayMap[dateString];
   if (schoolDay) {
-    return schoolDay.type !== 'Schoolday';
+    return !!NON_SCHOOL_TYPES[schoolDay.type];
   }
-  if (isWeekend_(dateString)) {
-    return true;
-  }
-  return !findCurrentLearningPeriod_(dateString, learningPeriods);
+  return true;
 }
 
 function chooseVacationName_(start, end, schoolDayMap) {
   var cursor = start;
   while (cursor <= end) {
     var record = schoolDayMap[cursor];
-    if (record && record.type && record.type !== 'Schoolday') {
+    if (record && NON_SCHOOL_TYPES[record.type]) {
       return start === end ? 'Holiday' : 'Break';
     }
     cursor = addDays_(cursor, 1);

@@ -1,62 +1,43 @@
-# Apps Script writer — setup
+# School Dates Writer — Apps Script
 
-`Code.gs` runs in the **robo-spark-attendance** Apps Script project on a daily
-trigger. It pulls PLSIS report 2618 and publishes the JSON files in this repo's
-`v1/` folder. Follow these steps once.
+The writer lives in a **dedicated standalone Apps Script project** (not the
+attendance script), managed by clasp from `gas-project/`:
 
-## 1. Create the GitHub PAT (the only write credential)
+- **Source of truth:** [`gas-project/Code.js`](../gas-project/Code.js) (pushed with `clasp push`)
+- **Editor:** https://script.google.com/d/1AZq1PpNCHZwqRo4s0M9qdxyiKHL95i_oQxzthQyejYoWYSEozqf5UHkW/edit
 
-GitHub → Settings → Developer settings → **Fine-grained personal access tokens** →
-Generate new token:
+It runs `main()` daily, pulls PLSIS report 2618, and publishes `v1/*.json` to
+this repo (served at https://dates.warner.click/v1/).
 
-- **Resource owner:** warnerwes
-- **Repository access:** Only select repositories → `warnerwes/school-dates`
-- **Permissions:** Repository permissions → **Contents: Read and write**
-- **Expiration:** 1 year (set a calendar reminder to rotate)
+## Status
 
-Copy the token (starts `github_pat_...`).
+- [x] Script created + code deployed (`clasp push`)
+- [x] Script Properties set: `PLSIS_PASSWORD`, `GITHUB_PAT`
+- [x] Authorized (consent granted) and first `main()` run published real data
+- [ ] **Daily trigger** — Triggers (⏰) → Add Trigger → function `main`,
+      Time-driven → Day timer → **3am–4am**, failure notification: daily
+- [ ] Custom-domain HTTPS cert (auto-provisioning) → enable Enforce HTTPS
 
-## 2. Add the code
+## Secrets
 
-In the robo-spark-attendance Apps Script project: create a file `Code.gs` (or a
-new file) and paste the contents of this repo's `apps-script/Code.gs`.
-
-## 3. Set Script Properties (secrets)
-
-Project Settings (gear) → **Script Properties** → Add:
+Both live in **Project Settings → Script Properties** (never in source):
 
 | Property | Value |
 |---|---|
-| `PLSIS_PASSWORD` | the PLSIS account password |
-| `GITHUB_PAT` | the `github_pat_...` token from step 1 |
+| `PLSIS_PASSWORD` | PLSIS account password |
+| `GITHUB_PAT` | fine-grained PAT, Contents:write on `warnerwes/school-dates` (1-yr expiry — set a rotation reminder) |
 
-## 4. Set the project timezone
+## Functions
 
-Project Settings → Time zone → **America/Los_Angeles** (so trigger + derived
-dates align with the school day).
+- `main()` — fetch → parse → derive → publish the four `v1/*.json`. Daily trigger target.
+- `setup()` — dry-run: validates properties + fetch + GitHub auth, logs counts, publishes nothing.
+- `inspect()` — diagnostic: logs the report's day-type codes and LP date ranges.
 
-## 5. Dry-run validation (no publish)
+On failure `main()` writes `lastRunOk:false` to `health.json`, emails the owner,
+and leaves the previous good files in place.
 
-Run the `setup()` function once. Authorize the scopes when prompted (external
-fetch + send email). Check **Executions / Logs** — you should see counts like:
+## Updating the code
 
-```
-{ "learningPeriods": N, "schoolDays": M, "holidays": K, "today": {...}, "nextVacation": {...} }
-```
-
-If it throws `missing required headers` or dates look wrong, the report's column
-names or date format differ from expectations — capture the log and we'll adjust
-`HEADERS` / `normalizeDate` in `Code.gs`.
-
-## 6. Real publish + the trigger
-
-- Run `main()` once manually to publish for real, then check
-  https://dates.warner.click/v1/today.json updates.
-- Triggers (clock icon) → Add trigger:
-  - Function: `main`
-  - Event source: Time-driven → Day timer → **3am to 4am** (Apps Script day-timers
-    are hour-windowed; it fires once in that window — close enough to 3:15).
-  - Failure notification: daily.
-
-On any failure the job emails the effective user, writes `lastRunOk:false` to
-`health.json`, and leaves the previous good files in place.
+Edit `gas-project/Code.js`, then `cd gas-project && clasp push`. The repo logic
+mirror in `test/calendar-logic.js` is kept in sync and covered by
+`node test/validate.js`.

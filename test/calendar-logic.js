@@ -1,6 +1,13 @@
 const TIMEZONE = 'America/Los_Angeles';
 const SOURCE_NAME = 'PLSIS report 2618 (Pacific Coast)';
 
+// The report's day-type vocabulary (from the real export):
+//   HOL       = holiday / non-instructional day (the authoritative "off" flag)
+//   Schoolday = regular in-session day
+//   ACA       = academic/extended-term in-session day (e.g. summer term)
+// Anything NOT in NON_SCHOOL_TYPES counts as school in session.
+const NON_SCHOOL_TYPES = { HOL: true };
+
 const HEADERS = {
   setTitle: '(Time Period Sets1) Title',
   periodTitle: '(Time Periods1) Title',
@@ -125,7 +132,7 @@ function buildHolidays(schoolDays) {
 
   for (let i = 0; i < schoolDays.length; i += 1) {
     const day = schoolDays[i];
-    if (day.date && day.type !== 'Schoolday' && !seen[day.date]) {
+    if (day.date && NON_SCHOOL_TYPES[day.type] && !seen[day.date]) {
       seen[day.date] = true;
       holidays.push(day.date);
     }
@@ -145,18 +152,23 @@ function buildToday(todayDate, learningPeriods, schoolDays) {
     dayType = todayRecord.type;
   } else if (isWeekend(todayDate)) {
     dayType = 'Weekend';
-  } else if (!currentLP) {
-    dayType = 'Summer/Break';
+  } else {
+    dayType = 'Unscheduled';
   }
 
+  // In session = a listed day whose type is not a non-school type (HOL).
   return {
     date: todayDate,
-    isSchoolDay: !!(todayRecord && todayRecord.type === 'Schoolday'),
+    isSchoolDay: !!(todayRecord && !NON_SCHOOL_TYPES[todayRecord.type]),
     currentLP: currentLP ? currentLP.lp : null,
     dayType
   };
 }
 
+// The next *extended break* on or after today — deliberately skipping plain
+// weekends. A non-school run counts as a break only if it takes at least one
+// weekday (Mon-Fri) off; a bare Saturday+Sunday does not. So a 3-day holiday
+// weekend or a week-long break surfaces, but a normal weekend never does.
 function buildNextVacation(todayDate, learningPeriods, schoolDays) {
   const schoolDayMap = buildSchoolDayMap(schoolDays);
   const horizonEnd = findSearchHorizonEnd(todayDate, learningPeriods, schoolDays);
@@ -166,7 +178,6 @@ function buildNextVacation(todayDate, learningPeriods, schoolDays) {
     if (isNonSchoolDate(cursor, learningPeriods, schoolDayMap)) {
       let start = cursor;
       let end = cursor;
-
       while (true) {
         const nextDate = addDays(end, 1);
         if (nextDate > horizonEnd || !isNonSchoolDate(nextDate, learningPeriods, schoolDayMap)) {
@@ -175,18 +186,43 @@ function buildNextVacation(todayDate, learningPeriods, schoolDays) {
         end = nextDate;
       }
 
-      return {
-        name: chooseVacationName(start, end, schoolDayMap),
-        start,
-        end,
-        daysUntil: diffDays(todayDate, start)
-      };
+      if (spanHasWeekdayOff(start, end)) {
+        return {
+          name: chooseVacationName(start, end, schoolDayMap),
+          start,
+          end,
+          daysUntil: diffDays(todayDate, start),
+          weekdaysOff: countWeekdays(start, end)
+        };
+      }
+      // Plain weekend (no weekday off) — skip it and keep looking.
+      cursor = addDays(end, 1);
+      continue;
     }
-
     cursor = addDays(cursor, 1);
   }
 
   return null;
+}
+
+// True if any date in [start,end] is a weekday (Mon-Fri).
+function spanHasWeekdayOff(start, end) {
+  let cursor = start;
+  while (cursor <= end) {
+    if (!isWeekend(cursor)) return true;
+    cursor = addDays(cursor, 1);
+  }
+  return false;
+}
+
+function countWeekdays(start, end) {
+  let cursor = start;
+  let n = 0;
+  while (cursor <= end) {
+    if (!isWeekend(cursor)) n += 1;
+    cursor = addDays(cursor, 1);
+  }
+  return n;
 }
 
 function findCurrentLearningPeriod(dateString, learningPeriods) {
@@ -199,22 +235,21 @@ function findCurrentLearningPeriod(dateString, learningPeriods) {
   return null;
 }
 
+// A date is "non-school" if it's a listed HOL, or it's not listed at all
+// (weekends and out-of-term gaps are simply absent from the enumerated days).
 function isNonSchoolDate(dateString, learningPeriods, schoolDayMap) {
   const schoolDay = schoolDayMap[dateString];
   if (schoolDay) {
-    return schoolDay.type !== 'Schoolday';
+    return !!NON_SCHOOL_TYPES[schoolDay.type];
   }
-  if (isWeekend(dateString)) {
-    return true;
-  }
-  return !findCurrentLearningPeriod(dateString, learningPeriods);
+  return true;
 }
 
 function chooseVacationName(start, end, schoolDayMap) {
   let cursor = start;
   while (cursor <= end) {
     const record = schoolDayMap[cursor];
-    if (record && record.type && record.type !== 'Schoolday') {
+    if (record && NON_SCHOOL_TYPES[record.type]) {
       return start === end ? 'Holiday' : 'Break';
     }
     cursor = addDays(cursor, 1);
@@ -310,11 +345,35 @@ function formatDate(date) {
   return `${y}-${m}-${d}`;
 }
 
+// Quote-aware CSV parse (RFC4180-ish): handles "quoted" fields, embedded commas,
+// and "" escapes. The real PLSIS export quotes every field.
 function splitCsv(csvText) {
-  return csvText
-    .split(/\r?\n/)
-    .map(line => line.split(','))
-    .filter(row => row.length > 0 && row.some(cell => cell !== ''));
+  const rows = [];
+  let row = [];
+  let field = '';
+  let inQuotes = false;
+  for (let i = 0; i < csvText.length; i += 1) {
+    const ch = csvText[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (csvText[i + 1] === '"') { field += '"'; i += 1; }
+        else { inQuotes = false; }
+      } else { field += ch; }
+    } else if (ch === '"') {
+      inQuotes = true;
+    } else if (ch === ',') {
+      row.push(field); field = '';
+    } else if (ch === '\n') {
+      row.push(field); field = '';
+      rows.push(row); row = [];
+    } else if (ch === '\r') {
+      // ignore; handled at \n
+    } else {
+      field += ch;
+    }
+  }
+  if (field !== '' || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.length > 0 && r.some(cell => cell !== ''));
 }
 
 function buildHeaderMap(headerRow) {
@@ -361,17 +420,28 @@ function dedupeLearningPeriods(learningPeriods) {
   return deduped.sort((a, b) => compareStrings(a.start, b.start));
 }
 
+// Dedupe by date with type precedence: HOL wins (a date flagged off in ANY row is
+// off), else a regular Schoolday, else whatever else (e.g. ACA). This matters
+// because the report lists each date under multiple sets with different types.
+function typeRank(type) {
+  if (NON_SCHOOL_TYPES[type]) return 3; // HOL
+  if (type === 'Schoolday') return 2;
+  return 1;                              // ACA / other in-session
+}
+
 function dedupeSchoolDays(schoolDays) {
-  const seen = {};
-  const deduped = [];
+  const byDate = {};
   for (let i = 0; i < schoolDays.length; i += 1) {
     const item = schoolDays[i];
-    if (item.date && !seen[item.date]) {
-      seen[item.date] = true;
-      deduped.push(item);
+    if (!item.date) continue;
+    const existing = byDate[item.date];
+    if (!existing || typeRank(item.type) > typeRank(existing.type)) {
+      byDate[item.date] = { date: item.date, type: item.type };
     }
   }
-  return deduped.sort((a, b) => compareStrings(a.date, b.date));
+  return Object.keys(byDate)
+    .map(d => byDate[d])
+    .sort((a, b) => compareStrings(a.date, b.date));
 }
 
 function buildSchoolDayMap(schoolDays) {

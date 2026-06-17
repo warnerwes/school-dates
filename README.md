@@ -51,8 +51,7 @@ same data so a frequent poller fetches a few bytes instead of the whole year.
 
 ## How it's published
 
-`apps-script/Code.gs` (source of truth for the writer) runs on a daily time trigger
-in the **robo-spark-attendance** Apps Script project. Secrets — the PLSIS password
+`gas-project/Code.js` (source of truth for the writer) runs on a daily time trigger in a dedicated standalone Apps Script project. Secrets — the PLSIS password
 and a GitHub fine-grained PAT (contents:write on this repo only) — live in Script
 Properties, never in source. On failure the job emails an alert and leaves the prior
 files live (last-known-good).
