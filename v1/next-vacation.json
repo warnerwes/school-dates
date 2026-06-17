@@ -1,9 +1,8 @@
 {
   "version": 1,
-  "status": "placeholder",
-  "lastUpdated": null,
-  "name": null,
-  "start": null,
-  "end": null,
-  "daysUntil": null
+  "lastUpdated": "2026-06-17T19:43:30.111Z",
+  "name": "Break",
+  "start": "2026-06-19",
+  "end": "2026-06-21",
+  "daysUntil": 2
 }
