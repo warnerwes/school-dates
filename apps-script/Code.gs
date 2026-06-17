@@ -103,6 +103,37 @@ function setup() {
 }
 
 /**
+ * One-off diagnostic: logs the distinct (School Days1) Type codes with counts,
+ * the full learning-period list with date ranges, and which LP(s) contain today.
+ * Run this by hand to discover the report's real vocabulary; publishes nothing.
+ */
+function inspect() {
+  var secrets = getSecrets_();
+  var csvText = fetchReport_(secrets.plsisPassword);
+  var parsed = parseReportCsv_(csvText);
+
+  var typeCounts = {};
+  for (var i = 0; i < parsed.schoolDays.length; i += 1) {
+    var t = parsed.schoolDays[i].type;
+    typeCounts[t] = (typeCounts[t] || 0) + 1;
+  }
+
+  var today = Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd');
+  var todayMatches = [];
+  for (var j = 0; j < parsed.learningPeriods.length; j += 1) {
+    var lp = parsed.learningPeriods[j];
+    if (lp.start && lp.end && lp.start <= today && today <= lp.end) {
+      todayMatches.push(lp);
+    }
+  }
+
+  Logger.log('DAY TYPE COUNTS: ' + JSON.stringify(typeCounts));
+  Logger.log('LEARNING PERIODS: ' + JSON.stringify(parsed.learningPeriods, null, 2));
+  Logger.log('SAMPLE today=' + today + ' ; LP MATCHES: ' + JSON.stringify(todayMatches));
+  Logger.log('SAMPLE schoolDays[0..4]: ' + JSON.stringify(parsed.schoolDays.slice(0, 5)));
+}
+
+/**
  * Reads required Script Properties and throws clear errors if missing.
  */
 function getSecrets_() {
