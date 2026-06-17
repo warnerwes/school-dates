@@ -6,13 +6,16 @@ const SOURCE_NAME = 'PLSIS report 2618 (Pacific Coast)';
 //   Schoolday = regular in-session day
 //   ACA       = academic/extended-term in-session day (e.g. summer term)
 // Anything NOT in NON_SCHOOL_TYPES counts as school in session.
-const NON_SCHOOL_TYPES = { HOL: true };
+const NON_SCHOOL_TYPES = { HOL: true, OTH: true };
 
 const HEADERS = {
   setTitle: '(Time Period Sets1) Title',
   periodTitle: '(Time Periods1) Title',
+  localId: '(Time Periods1) Local ID',
   startDate: '(Time Periods1) Start Date',
   finishDate: '(Time Periods1) Finish Date',
+  parentPeriod: '(Time Periods1) Parent Period',
+  track: '(Time Period Sets1) Track',
   dayDate: '(School Days1) Day',
   dayType: '(School Days1) Type',
   periodSet: '(Time Periods1) Period Set'
@@ -28,6 +31,9 @@ function parseReportCsv(csvText) {
   const headerMap = buildHeaderMap(rows[0]);
   assertRequiredHeadersPresent(headerMap);
 
+  const schoolYears = [];
+  const semesters = [];
+  const progressReports = [];
   const learningPeriods = [];
   const schoolDays = [];
   const knownDates = {};
@@ -36,14 +42,47 @@ function parseReportCsv(csvText) {
     const row = rows[i];
     const setTitle = getCellByHeader(row, headerMap, HEADERS.setTitle);
     const periodTitle = getCellByHeader(row, headerMap, HEADERS.periodTitle);
+    const localId = getCellByHeader(row, headerMap, HEADERS.localId);
     const startDate = normalizeDate(getCellByHeader(row, headerMap, HEADERS.startDate));
     const finishDate = normalizeDate(getCellByHeader(row, headerMap, HEADERS.finishDate));
+    const parentPeriod = getCellByHeader(row, headerMap, HEADERS.parentPeriod);
+    const track = getCellByHeader(row, headerMap, HEADERS.track);
     const dayDate = normalizeDate(getCellByHeader(row, headerMap, HEADERS.dayDate));
     const dayType = getCellByHeader(row, headerMap, HEADERS.dayType);
     const periodSet = getCellByHeader(row, headerMap, HEADERS.periodSet);
 
+    if (setTitle === 'Schoolyear' && periodTitle && localId) {
+      schoolYears.push({
+        localId,
+        title: periodTitle,
+        start: startDate,
+        end: finishDate,
+        track
+      });
+    }
+
+    if (setTitle === 'Schoolperiod' && periodTitle && localId) {
+      if (isSemesterTitle(periodTitle)) {
+        semesters.push({
+          localId,
+          title: periodTitle,
+          year: parentPeriod || null,
+          start: startDate,
+          end: finishDate
+        });
+      } else if (isProgressReportTitle(periodTitle)) {
+        progressReports.push({
+          localId,
+          title: periodTitle,
+          semester: parentPeriod || null,
+          start: startDate,
+          end: finishDate
+        });
+      }
+    }
+
     if (setTitle === 'Lpset' && periodTitle) {
-      learningPeriods.push({ lp: periodTitle, start: startDate, end: finishDate });
+      learningPeriods.push({ lp: periodTitle, localId, start: startDate, end: finishDate });
     }
 
     if (dayDate && dayType) {
@@ -63,21 +102,38 @@ function parseReportCsv(csvText) {
     }
   }
 
+  const dedupedSchoolYears = dedupeByLocalId(schoolYears);
+  const dedupedSemesters = dedupeByLocalId(semesters);
+
   return {
-    learningPeriods: dedupeLearningPeriods(learningPeriods),
+    schoolYears: dedupedSchoolYears,
+    semesters: dedupedSemesters,
+    progressReports: dedupeByLocalId(progressReports),
+    learningPeriods: dedupeLearningPeriods(learningPeriods, dedupedSchoolYears, dedupedSemesters),
     schoolDays: dedupeSchoolDays(schoolDays)
   };
 }
 
-function buildCalendarPayload(learningPeriods, schoolDays, isoTimestamp, todayDate) {
+function buildCalendarPayload(
+  schoolYears,
+  semesters,
+  progressReports,
+  learningPeriods,
+  schoolDays,
+  isoTimestamp,
+  todayDate
+) {
   const holidays = buildHolidays(schoolDays);
-  const today = buildToday(todayDate, learningPeriods, schoolDays);
+  const today = buildToday(todayDate, schoolYears, semesters, progressReports, learningPeriods, schoolDays);
   const nextVacation = buildNextVacation(todayDate, learningPeriods, schoolDays);
 
   return {
     version: 1,
     lastUpdated: isoTimestamp,
     source: SOURCE_NAME,
+    schoolYears,
+    semesters,
+    progressReports,
     learningPeriods,
     schoolDays,
     holidays,
@@ -102,6 +158,9 @@ function buildOutputFiles(calendarPayload, isoTimestamp) {
       date: calendarPayload.today.date,
       isSchoolDay: calendarPayload.today.isSchoolDay,
       currentLP: calendarPayload.today.currentLP,
+      currentYear: calendarPayload.today.currentYear,
+      currentSemester: calendarPayload.today.currentSemester,
+      currentProgressReport: calendarPayload.today.currentProgressReport,
       dayType: calendarPayload.today.dayType
     }, null, 2),
     nextVacation: JSON.stringify({
@@ -118,6 +177,9 @@ function buildOutputFiles(calendarPayload, isoTimestamp) {
       lastRunOk: true,
       source: SOURCE_NAME,
       counts: {
+        schoolYears: calendarPayload.schoolYears.length,
+        semesters: calendarPayload.semesters.length,
+        progressReports: calendarPayload.progressReports.length,
         learningPeriods: calendarPayload.learningPeriods.length,
         schoolDays: calendarPayload.schoolDays.length,
         holidays: calendarPayload.holidays.length
@@ -132,7 +194,7 @@ function buildHolidays(schoolDays) {
 
   for (let i = 0; i < schoolDays.length; i += 1) {
     const day = schoolDays[i];
-    if (day.date && NON_SCHOOL_TYPES[day.type] && !seen[day.date]) {
+    if (day.date && day.type === 'HOL' && !seen[day.date]) {
       seen[day.date] = true;
       holidays.push(day.date);
     }
@@ -142,10 +204,13 @@ function buildHolidays(schoolDays) {
   return holidays;
 }
 
-function buildToday(todayDate, learningPeriods, schoolDays) {
+function buildToday(todayDate, schoolYears, semesters, progressReports, learningPeriods, schoolDays) {
   const schoolDayMap = buildSchoolDayMap(schoolDays);
   const todayRecord = schoolDayMap[todayDate] || null;
   const currentLP = findCurrentLearningPeriod(todayDate, learningPeriods);
+  const currentYear = findCurrentPeriod(todayDate, schoolYears);
+  const currentSemester = findCurrentPeriod(todayDate, semesters);
+  const currentProgressReport = findCurrentPeriod(todayDate, progressReports);
   let dayType = null;
 
   if (todayRecord) {
@@ -161,6 +226,9 @@ function buildToday(todayDate, learningPeriods, schoolDays) {
     date: todayDate,
     isSchoolDay: !!(todayRecord && !NON_SCHOOL_TYPES[todayRecord.type]),
     currentLP: currentLP ? currentLP.lp : null,
+    currentYear: currentYear ? currentYear.title : null,
+    currentSemester: currentSemester ? currentSemester.title : null,
+    currentProgressReport: currentProgressReport ? currentProgressReport.title : null,
     dayType
   };
 }
@@ -230,6 +298,16 @@ function findCurrentLearningPeriod(dateString, learningPeriods) {
     const lp = learningPeriods[i];
     if (lp.start && lp.end && lp.start <= dateString && dateString <= lp.end) {
       return lp;
+    }
+  }
+  return null;
+}
+
+function findCurrentPeriod(dateString, periods) {
+  for (let i = 0; i < periods.length; i += 1) {
+    const period = periods[i];
+    if (period.start && period.end && period.start <= dateString && dateString <= period.end) {
+      return period;
     }
   }
   return null;
@@ -388,8 +466,11 @@ function assertRequiredHeadersPresent(headerMap) {
   const required = [
     HEADERS.setTitle,
     HEADERS.periodTitle,
+    HEADERS.localId,
     HEADERS.startDate,
     HEADERS.finishDate,
+    HEADERS.parentPeriod,
+    HEADERS.track,
     HEADERS.dayDate,
     HEADERS.dayType,
     HEADERS.periodSet
@@ -406,18 +487,69 @@ function getCellByHeader(row, headerMap, headerName) {
   return safeTrim(row[index]);
 }
 
-function dedupeLearningPeriods(learningPeriods) {
+function dedupeLearningPeriods(learningPeriods, schoolYears, semesters) {
   const seen = {};
   const deduped = [];
   for (let i = 0; i < learningPeriods.length; i += 1) {
     const item = learningPeriods[i];
-    const key = `${item.lp}-${item.start}`;
+    const key = item.localId || `${item.lp}-${item.start}`;
     if (!seen[key]) {
       seen[key] = true;
-      deduped.push(item);
+      deduped.push({
+        lp: item.lp,
+        localId: item.localId || null,
+        year: findYearForLp(item.start, semesters, schoolYears),
+        start: item.start,
+        end: item.end
+      });
     }
   }
   return deduped.sort((a, b) => compareStrings(a.start, b.start));
+}
+
+// LP -> academic year: prefer the semester containing the LP (semesters always
+// carry a year), since the report may have no Schoolyear period for some years
+// (e.g. a prior academic year present only via its semesters). Fall back to the
+// containing Schoolyear title.
+function findYearForLp(dateString, semesters, schoolYears) {
+  const sems = semesters || [];
+  for (let i = 0; i < sems.length; i += 1) {
+    const s = sems[i];
+    if (s.start && s.end && s.year && s.start <= dateString && dateString <= s.end) {
+      return s.year;
+    }
+  }
+  return findContainingSchoolYearTitle(dateString, schoolYears);
+}
+
+function dedupeByLocalId(items) {
+  const seen = {};
+  const deduped = [];
+  for (let i = 0; i < items.length; i += 1) {
+    const item = items[i];
+    if (!item.localId || seen[item.localId]) continue;
+    seen[item.localId] = true;
+    deduped.push(item);
+  }
+  return deduped.sort((a, b) => compareStrings(a.start, b.start));
+}
+
+function findContainingSchoolYearTitle(dateString, schoolYears) {
+  for (let i = 0; i < schoolYears.length; i += 1) {
+    const year = schoolYears[i];
+    if (year.start && year.end && year.start <= dateString && dateString <= year.end) {
+      return year.title;
+    }
+  }
+  return null;
+}
+
+function isSemesterTitle(periodTitle) {
+  return periodTitle.indexOf('Semester') === 0 || periodTitle === 'Summer Session';
+}
+
+function isProgressReportTitle(periodTitle) {
+  return periodTitle.indexOf('Progress Report') === 0;
 }
 
 // Dedupe by date with type precedence: HOL wins (a date flagged off in ANY row is
@@ -481,7 +613,9 @@ module.exports = {
   isWeekend,
   normalizeDate,
   dedupeLearningPeriods,
+  dedupeByLocalId,
   dedupeSchoolDays,
   findCurrentLearningPeriod,
+  findCurrentPeriod,
   buildSchoolDayMap
 };

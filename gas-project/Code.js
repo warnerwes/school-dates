@@ -28,8 +28,11 @@ var SOURCE_NAME = 'PLSIS report 2618 (Pacific Coast)';
 var HEADERS = {
   setTitle: '(Time Period Sets1) Title',
   periodTitle: '(Time Periods1) Title',
+  localId: '(Time Periods1) Local ID',
   startDate: '(Time Periods1) Start Date',
   finishDate: '(Time Periods1) Finish Date',
+  parentPeriod: '(Time Periods1) Parent Period',
+  track: '(Time Period Sets1) Track',
   dayDate: '(School Days1) Day',
   dayType: '(School Days1) Type',
   periodSet: '(Time Periods1) Period Set'
@@ -40,7 +43,7 @@ var HEADERS = {
 //   Schoolday = regular in-session day
 //   ACA       = academic/extended-term in-session day (e.g. summer term)
 // Anything NOT listed here counts as school in session.
-var NON_SCHOOL_TYPES = { HOL: true };
+var NON_SCHOOL_TYPES = { HOL: true, OTH: true };
 
 /**
  * Trigger entry point. Fetches, parses, derives, and publishes JSON outputs.
@@ -53,7 +56,14 @@ function main() {
     var secrets = getSecrets_();
     var csvText = fetchReport_(secrets.plsisPassword);
     var parsed = parseReportCsv_(csvText);
-    var calendarPayload = buildCalendarPayload_(parsed.learningPeriods, parsed.schoolDays, isoTimestamp);
+    var calendarPayload = buildCalendarPayload_(
+      parsed.schoolYears,
+      parsed.semesters,
+      parsed.progressReports,
+      parsed.learningPeriods,
+      parsed.schoolDays,
+      isoTimestamp
+    );
     var outputs = buildOutputFiles_(calendarPayload, isoTimestamp);
 
     publishFile(OUTPUT_PREFIX + 'calendar.json', outputs.calendar, secrets.githubPat, isoTimestamp);
@@ -95,12 +105,22 @@ function setup() {
   var secrets = getSecrets_();
   var csvText = fetchReport_(secrets.plsisPassword);
   var parsed = parseReportCsv_(csvText);
-  var calendarPayload = buildCalendarPayload_(parsed.learningPeriods, parsed.schoolDays, new Date().toISOString());
+  var calendarPayload = buildCalendarPayload_(
+    parsed.schoolYears,
+    parsed.semesters,
+    parsed.progressReports,
+    parsed.learningPeriods,
+    parsed.schoolDays,
+    new Date().toISOString()
+  );
 
   verifyGitHubAccess_(secrets.githubPat);
 
   Logger.log(JSON.stringify({
     source: SOURCE_NAME,
+    schoolYears: calendarPayload.schoolYears.length,
+    semesters: calendarPayload.semesters.length,
+    progressReports: calendarPayload.progressReports.length,
     learningPeriods: calendarPayload.learningPeriods.length,
     schoolDays: calendarPayload.schoolDays.length,
     holidays: calendarPayload.holidays.length,
@@ -217,6 +237,9 @@ function parseReportCsv_(csvText) {
   var headerMap = buildHeaderMap_(rows[0]);
   assertRequiredHeadersPresent_(headerMap);
 
+  var schoolYears = [];
+  var semesters = [];
+  var progressReports = [];
   var learningPeriods = [];
   var schoolDays = [];
   var knownDates = {};
@@ -225,15 +248,49 @@ function parseReportCsv_(csvText) {
     var row = rows[i];
     var setTitle = getCellByHeader_(row, headerMap, HEADERS.setTitle);
     var periodTitle = getCellByHeader_(row, headerMap, HEADERS.periodTitle);
+    var localId = getCellByHeader_(row, headerMap, HEADERS.localId);
     var startDate = normalizeDate(getCellByHeader_(row, headerMap, HEADERS.startDate));
     var finishDate = normalizeDate(getCellByHeader_(row, headerMap, HEADERS.finishDate));
+    var parentPeriod = getCellByHeader_(row, headerMap, HEADERS.parentPeriod);
+    var track = getCellByHeader_(row, headerMap, HEADERS.track);
     var dayDate = normalizeDate(getCellByHeader_(row, headerMap, HEADERS.dayDate));
     var dayType = getCellByHeader_(row, headerMap, HEADERS.dayType);
     var periodSet = getCellByHeader_(row, headerMap, HEADERS.periodSet);
 
+    if (setTitle === 'Schoolyear' && periodTitle && localId) {
+      schoolYears.push({
+        localId: localId,
+        title: periodTitle,
+        start: startDate,
+        end: finishDate,
+        track: track
+      });
+    }
+
+    if (setTitle === 'Schoolperiod' && periodTitle && localId) {
+      if (isSemesterTitle_(periodTitle)) {
+        semesters.push({
+          localId: localId,
+          title: periodTitle,
+          year: parentPeriod || null,
+          start: startDate,
+          end: finishDate
+        });
+      } else if (isProgressReportTitle_(periodTitle)) {
+        progressReports.push({
+          localId: localId,
+          title: periodTitle,
+          semester: parentPeriod || null,
+          start: startDate,
+          end: finishDate
+        });
+      }
+    }
+
     if (setTitle === 'Lpset' && periodTitle) {
       learningPeriods.push({
         lp: periodTitle,
+        localId: localId,
         start: startDate,
         end: finishDate
       });
@@ -256,8 +313,14 @@ function parseReportCsv_(csvText) {
     }
   }
 
+  var dedupedSchoolYears = dedupeByLocalId_(schoolYears);
+  var dedupedSemesters = dedupeByLocalId_(semesters);
+
   return {
-    learningPeriods: dedupeLearningPeriods_(learningPeriods),
+    schoolYears: dedupedSchoolYears,
+    semesters: dedupedSemesters,
+    progressReports: dedupeByLocalId_(progressReports),
+    learningPeriods: dedupeLearningPeriods_(learningPeriods, dedupedSchoolYears, dedupedSemesters),
     schoolDays: dedupeSchoolDays_(schoolDays)
   };
 }
@@ -265,16 +328,19 @@ function parseReportCsv_(csvText) {
 /**
  * Builds the full calendar payload and derived fields.
  */
-function buildCalendarPayload_(learningPeriods, schoolDays, isoTimestamp) {
+function buildCalendarPayload_(schoolYears, semesters, progressReports, learningPeriods, schoolDays, isoTimestamp) {
   var todayDate = Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd');
   var holidays = buildHolidays_(schoolDays);
-  var today = buildToday_(todayDate, learningPeriods, schoolDays);
+  var today = buildToday_(todayDate, schoolYears, semesters, progressReports, learningPeriods, schoolDays);
   var nextVacation = buildNextVacation_(todayDate, learningPeriods, schoolDays);
 
   return {
     version: 1,
     lastUpdated: isoTimestamp,
     source: SOURCE_NAME,
+    schoolYears: schoolYears,
+    semesters: semesters,
+    progressReports: progressReports,
     learningPeriods: learningPeriods,
     schoolDays: schoolDays,
     holidays: holidays,
@@ -302,6 +368,9 @@ function buildOutputFiles_(calendarPayload, isoTimestamp) {
       date: calendarPayload.today.date,
       isSchoolDay: calendarPayload.today.isSchoolDay,
       currentLP: calendarPayload.today.currentLP,
+      currentYear: calendarPayload.today.currentYear,
+      currentSemester: calendarPayload.today.currentSemester,
+      currentProgressReport: calendarPayload.today.currentProgressReport,
       dayType: calendarPayload.today.dayType
     }, null, 2),
     nextVacation: JSON.stringify({
@@ -318,6 +387,9 @@ function buildOutputFiles_(calendarPayload, isoTimestamp) {
       lastRunOk: true,
       source: SOURCE_NAME,
       counts: {
+        schoolYears: calendarPayload.schoolYears.length,
+        semesters: calendarPayload.semesters.length,
+        progressReports: calendarPayload.progressReports.length,
         learningPeriods: calendarPayload.learningPeriods.length,
         schoolDays: calendarPayload.schoolDays.length,
         holidays: calendarPayload.holidays.length
@@ -408,7 +480,7 @@ function buildHolidays_(schoolDays) {
 
   for (var i = 0; i < schoolDays.length; i += 1) {
     var day = schoolDays[i];
-    if (day.date && NON_SCHOOL_TYPES[day.type] && !seen[day.date]) {
+    if (day.date && day.type === 'HOL' && !seen[day.date]) {
       seen[day.date] = true;
       holidays.push(day.date);
     }
@@ -421,10 +493,13 @@ function buildHolidays_(schoolDays) {
 /**
  * Computes the today payload in Los Angeles time.
  */
-function buildToday_(todayDate, learningPeriods, schoolDays) {
+function buildToday_(todayDate, schoolYears, semesters, progressReports, learningPeriods, schoolDays) {
   var schoolDayMap = buildSchoolDayMap_(schoolDays);
   var todayRecord = schoolDayMap[todayDate] || null;
   var currentLP = findCurrentLearningPeriod_(todayDate, learningPeriods);
+  var currentYear = findCurrentPeriod_(todayDate, schoolYears);
+  var currentSemester = findCurrentPeriod_(todayDate, semesters);
+  var currentProgressReport = findCurrentPeriod_(todayDate, progressReports);
   var dayType = null;
 
   if (todayRecord) {
@@ -439,6 +514,9 @@ function buildToday_(todayDate, learningPeriods, schoolDays) {
     date: todayDate,
     isSchoolDay: !!(todayRecord && !NON_SCHOOL_TYPES[todayRecord.type]),
     currentLP: currentLP ? currentLP.lp : null,
+    currentYear: currentYear ? currentYear.title : null,
+    currentSemester: currentSemester ? currentSemester.title : null,
+    currentProgressReport: currentProgressReport ? currentProgressReport.title : null,
     dayType: dayType
   };
 }
@@ -520,6 +598,16 @@ function findCurrentLearningPeriod_(dateString, learningPeriods) {
   return null;
 }
 
+function findCurrentPeriod_(dateString, periods) {
+  for (var i = 0; i < periods.length; i += 1) {
+    var period = periods[i];
+    if (period.start && period.end && period.start <= dateString && dateString <= period.end) {
+      return period;
+    }
+  }
+  return null;
+}
+
 /**
  * Normalizes common date formats to YYYY-MM-DD. Unparseable values pass through.
  */
@@ -572,8 +660,11 @@ function assertRequiredHeadersPresent_(headerMap) {
   var required = [
     HEADERS.setTitle,
     HEADERS.periodTitle,
+    HEADERS.localId,
     HEADERS.startDate,
     HEADERS.finishDate,
+    HEADERS.parentPeriod,
+    HEADERS.track,
     HEADERS.dayDate,
     HEADERS.dayType,
     HEADERS.periodSet
@@ -599,16 +690,22 @@ function getCellByHeader_(row, headerMap, headerName) {
   return safeTrim_(row[index]);
 }
 
-function dedupeLearningPeriods_(learningPeriods) {
+function dedupeLearningPeriods_(learningPeriods, schoolYears, semesters) {
   var seen = {};
   var deduped = [];
 
   for (var i = 0; i < learningPeriods.length; i += 1) {
     var item = learningPeriods[i];
-    var key = item.lp + '-' + item.start;
+    var key = item.localId || (item.lp + '-' + item.start);
     if (!seen[key]) {
       seen[key] = true;
-      deduped.push(item);
+      deduped.push({
+        lp: item.lp,
+        localId: item.localId || null,
+        year: findYearForLp_(item.start, semesters, schoolYears),
+        start: item.start,
+        end: item.end
+      });
     }
   }
 
@@ -617,6 +714,56 @@ function dedupeLearningPeriods_(learningPeriods) {
   });
 
   return deduped;
+}
+
+function dedupeByLocalId_(items) {
+  var seen = {};
+  var deduped = [];
+
+  for (var i = 0; i < items.length; i += 1) {
+    var item = items[i];
+    if (!item.localId || seen[item.localId]) continue;
+    seen[item.localId] = true;
+    deduped.push(item);
+  }
+
+  deduped.sort(function(a, b) {
+    return compareStrings_(a.start, b.start);
+  });
+
+  return deduped;
+}
+
+function findContainingSchoolYearTitle_(dateString, schoolYears) {
+  for (var i = 0; i < schoolYears.length; i += 1) {
+    var year = schoolYears[i];
+    if (year.start && year.end && year.start <= dateString && dateString <= year.end) {
+      return year.title;
+    }
+  }
+  return null;
+}
+
+// LP -> academic year: prefer the semester containing the LP (semesters always
+// carry a year); fall back to the containing Schoolyear. Handles years present
+// only via their semesters (no Schoolyear period in the report).
+function findYearForLp_(dateString, semesters, schoolYears) {
+  var sems = semesters || [];
+  for (var i = 0; i < sems.length; i += 1) {
+    var s = sems[i];
+    if (s.start && s.end && s.year && s.start <= dateString && dateString <= s.end) {
+      return s.year;
+    }
+  }
+  return findContainingSchoolYearTitle_(dateString, schoolYears);
+}
+
+function isSemesterTitle_(periodTitle) {
+  return periodTitle.indexOf('Semester') === 0 || periodTitle === 'Summer Session';
+}
+
+function isProgressReportTitle_(periodTitle) {
+  return periodTitle.indexOf('Progress Report') === 0;
 }
 
 // Dedupe by date with type precedence: HOL wins (a date flagged off in ANY row
