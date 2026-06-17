@@ -1,7 +1,11 @@
 {
   "version": 1,
-  "status": "placeholder",
-  "lastUpdated": null,
-  "lastRunOk": null,
-  "source": "PLSIS report 2618 (Pacific Coast)"
+  "lastUpdated": "2026-06-17T19:43:30.111Z",
+  "lastRunOk": true,
+  "source": "PLSIS report 2618 (Pacific Coast)",
+  "counts": {
+    "learningPeriods": 13,
+    "schoolDays": 345,
+    "holidays": 36
+  }
 }
