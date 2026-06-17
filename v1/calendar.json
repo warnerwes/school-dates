@@ -1,86 +1,1245 @@
 {
   "version": 1,
-  "lastUpdated": "2026-06-17T20:06:19.300Z",
+  "lastUpdated": "2026-06-17T21:32:08.459Z",
   "source": "PLSIS report 2618 (Pacific Coast)",
+  "schoolYears": [
+    {
+      "localId": "5393",
+      "title": "2024 - 2025",
+      "start": "2025-06-16",
+      "end": "2025-07-25",
+      "track": "B"
+    },
+    {
+      "localId": "5132",
+      "title": "2025 - 2026",
+      "start": "2025-08-14",
+      "end": "2026-05-29",
+      "track": "C"
+    },
+    {
+      "localId": "5646",
+      "title": "2025 - 2026",
+      "start": "2026-06-15",
+      "end": "2026-07-24",
+      "track": "B"
+    },
+    {
+      "localId": "5426",
+      "title": "2026 - 2027",
+      "start": "2026-08-13",
+      "end": "2027-05-28",
+      "track": "C"
+    }
+  ],
+  "semesters": [
+    {
+      "localId": "5088",
+      "title": "Semester 2 (Spring)",
+      "year": "2024 - 2025",
+      "start": "2025-01-13",
+      "end": "2025-05-30"
+    },
+    {
+      "localId": "5425",
+      "title": "Summer Session",
+      "year": "2024 - 2025",
+      "start": "2025-06-16",
+      "end": "2025-07-25"
+    },
+    {
+      "localId": "5381",
+      "title": "Semester 1 (Fall)",
+      "year": "2025 - 2026",
+      "start": "2025-08-14",
+      "end": "2026-01-09"
+    },
+    {
+      "localId": "5382",
+      "title": "Semester 2 (Spring)",
+      "year": "2025 - 2026",
+      "start": "2026-01-12",
+      "end": "2026-05-29"
+    },
+    {
+      "localId": "5678",
+      "title": "Summer Session",
+      "year": "2025 - 2026",
+      "start": "2026-06-15",
+      "end": "2026-07-24"
+    },
+    {
+      "localId": "5642",
+      "title": "Semester 1 (Fall)",
+      "year": "2026 - 2027",
+      "start": "2026-08-13",
+      "end": "2027-01-08"
+    },
+    {
+      "localId": "5643",
+      "title": "Semester 2 (Spring)",
+      "year": "2026 - 2027",
+      "start": "2027-01-11",
+      "end": "2027-05-28"
+    }
+  ],
+  "progressReports": [
+    {
+      "localId": "5090",
+      "title": "Progress Report 2",
+      "semester": "Semester 2 (Spring)",
+      "start": "2025-01-13",
+      "end": "2025-03-14"
+    },
+    {
+      "localId": "5383",
+      "title": "Progress Report 1",
+      "semester": "Semester 1 (Fall)",
+      "start": "2025-08-14",
+      "end": "2025-10-17"
+    },
+    {
+      "localId": "5384",
+      "title": "Progress Report 2",
+      "semester": "Semester 2 (Spring)",
+      "start": "2026-01-12",
+      "end": "2026-03-27"
+    },
+    {
+      "localId": "5644",
+      "title": "Progress Report 1",
+      "semester": "Semester 1 (Fall)",
+      "start": "2026-08-13",
+      "end": "2026-10-09"
+    },
+    {
+      "localId": "5645",
+      "title": "Progress Report 2",
+      "semester": "Semester 2 (Spring)",
+      "start": "2027-01-11",
+      "end": "2027-03-19"
+    }
+  ],
   "learningPeriods": [
     {
       "lp": "5",
+      "localId": "5128",
+      "year": "2024 - 2025",
+      "start": "2025-01-13",
+      "end": "2025-02-07"
+    },
+    {
+      "lp": "6",
+      "localId": "5129",
+      "year": "2024 - 2025",
+      "start": "2025-02-10",
+      "end": "2025-03-14"
+    },
+    {
+      "lp": "7",
+      "localId": "5130",
+      "year": "2024 - 2025",
+      "start": "2025-03-17",
+      "end": "2025-04-11"
+    },
+    {
+      "lp": "8",
+      "localId": "5131",
+      "year": "2024 - 2025",
+      "start": "2025-04-21",
+      "end": "2025-05-30"
+    },
+    {
+      "lp": "1",
+      "localId": "5424",
+      "year": "2024 - 2025",
+      "start": "2025-06-16",
+      "end": "2025-07-25"
+    },
+    {
+      "lp": "1",
+      "localId": "5385",
+      "year": "2025 - 2026",
+      "start": "2025-08-14",
+      "end": "2025-09-12"
+    },
+    {
+      "lp": "2",
+      "localId": "5386",
+      "year": "2025 - 2026",
+      "start": "2025-09-15",
+      "end": "2025-10-17"
+    },
+    {
+      "lp": "3",
+      "localId": "5387",
+      "year": "2025 - 2026",
+      "start": "2025-10-20",
+      "end": "2025-11-21"
+    },
+    {
+      "lp": "4",
+      "localId": "5388",
+      "year": "2025 - 2026",
+      "start": "2025-12-02",
+      "end": "2026-01-09"
+    },
+    {
+      "lp": "5",
+      "localId": "5389",
+      "year": "2025 - 2026",
       "start": "2026-01-12",
       "end": "2026-02-12"
     },
     {
       "lp": "6",
+      "localId": "5390",
+      "year": "2025 - 2026",
       "start": "2026-02-23",
       "end": "2026-03-27"
     },
     {
       "lp": "7",
+      "localId": "5391",
+      "year": "2025 - 2026",
       "start": "2026-03-30",
       "end": "2026-05-01"
     },
     {
       "lp": "8",
+      "localId": "5392",
+      "year": "2025 - 2026",
       "start": "2026-05-04",
       "end": "2026-05-29"
     },
     {
       "lp": "1",
+      "localId": "5677",
+      "year": "2025 - 2026",
       "start": "2026-06-15",
       "end": "2026-07-24"
     },
     {
       "lp": "1",
+      "localId": "5634",
+      "year": "2026 - 2027",
       "start": "2026-08-13",
       "end": "2026-09-11"
     },
     {
       "lp": "2",
+      "localId": "5635",
+      "year": "2026 - 2027",
       "start": "2026-09-14",
       "end": "2026-10-09"
     },
     {
       "lp": "3",
+      "localId": "5636",
+      "year": "2026 - 2027",
       "start": "2026-10-12",
       "end": "2026-11-13"
     },
     {
       "lp": "4",
+      "localId": "5637",
+      "year": "2026 - 2027",
       "start": "2026-11-16",
       "end": "2027-01-08"
     },
     {
       "lp": "5",
+      "localId": "5638",
+      "year": "2026 - 2027",
       "start": "2027-01-11",
       "end": "2027-02-11"
     },
     {
       "lp": "6",
+      "localId": "5639",
+      "year": "2026 - 2027",
       "start": "2027-02-22",
       "end": "2027-03-19"
     },
     {
       "lp": "7",
+      "localId": "5640",
+      "year": "2026 - 2027",
       "start": "2027-03-22",
       "end": "2027-04-23"
     },
     {
       "lp": "8",
+      "localId": "5641",
+      "year": "2026 - 2027",
       "start": "2027-04-26",
       "end": "2027-05-28"
     }
   ],
   "schoolDays": [
     {
-      "date": "2025-12-31",
+      "date": "2024-12-31",
       "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-01",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-02",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-03",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-06",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-07",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-08",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-09",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-10",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-13",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-14",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-15",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-16",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-17",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-20",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-21",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-22",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-23",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-24",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-27",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-28",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-29",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-30",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-01-31",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-03",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-04",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-05",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-06",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-07",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-10",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-11",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-12",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-13",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-14",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-17",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-18",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-19",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-20",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-21",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-24",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-25",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-26",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-27",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-02-28",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-03",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-04",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-05",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-06",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-07",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-10",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-11",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-12",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-13",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-14",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-17",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-18",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-19",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-20",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-21",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-24",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-25",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-26",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-27",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-28",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-03-31",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-01",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-02",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-03",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-04",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-07",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-08",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-09",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-10",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-11",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-14",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-15",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-16",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-17",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-18",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-21",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-22",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-23",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-24",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-25",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-28",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-29",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-04-30",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-01",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-02",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-05",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-06",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-07",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-08",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-09",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-12",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-13",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-14",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-15",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-16",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-19",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-20",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-21",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-22",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-23",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-26",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-27",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-28",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-29",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-05-30",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-06-16",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-06-17",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-06-18",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-06-19",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-06-20",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-06-23",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-06-24",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-06-25",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-06-26",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-06-27",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-06-30",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-07-01",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-07-02",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-07-03",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-07-04",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-07-07",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-07-08",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-07-09",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-07-10",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-07-11",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-07-14",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-07-15",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-07-16",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-07-17",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-07-18",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-07-21",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-07-22",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-07-23",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-07-24",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-07-25",
+      "type": "ACA"
+    },
+    {
+      "date": "2025-08-14",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-08-15",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-08-18",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-08-19",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-08-20",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-08-21",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-08-22",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-08-25",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-08-26",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-08-27",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-08-28",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-08-29",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-01",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-09-02",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-03",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-04",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-05",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-08",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-09",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-10",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-11",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-12",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-15",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-16",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-17",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-18",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-19",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-22",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-23",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-24",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-25",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-26",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-29",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-09-30",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-01",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-02",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-03",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-06",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-07",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-08",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-09",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-10",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-13",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-14",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-15",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-16",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-17",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-20",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-21",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-22",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-23",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-24",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-27",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-28",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-29",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-30",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-10-31",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-11-03",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-11-04",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-11-05",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-11-06",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-11-07",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-11-10",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-11-11",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-11-12",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-11-13",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-11-14",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-11-17",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-11-18",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-11-19",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-11-20",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-11-21",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-11-24",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-11-25",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-11-26",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-11-27",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-11-28",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-12-01",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-12-02",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-12-03",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-12-04",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-12-05",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-12-08",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-12-09",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-12-10",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-12-11",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-12-12",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-12-15",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-12-16",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-12-17",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-12-18",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-12-19",
+      "type": "Schoolday"
+    },
+    {
+      "date": "2025-12-22",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-12-23",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-12-24",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-12-25",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-12-26",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-12-29",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-12-30",
+      "type": "HOL"
+    },
+    {
+      "date": "2025-12-31",
+      "type": "HOL"
     },
     {
       "date": "2026-01-01",
-      "type": "Schoolday"
+      "type": "HOL"
     },
     {
       "date": "2026-01-02",
-      "type": "Schoolday"
+      "type": "HOL"
     },
     {
       "date": "2026-01-05",
@@ -116,7 +1275,7 @@
     },
     {
       "date": "2026-01-15",
-      "type": "Schoolday"
+      "type": "OTH"
     },
     {
       "date": "2026-01-16",
@@ -124,7 +1283,7 @@
     },
     {
       "date": "2026-01-19",
-      "type": "Schoolday"
+      "type": "HOL"
     },
     {
       "date": "2026-01-20",
@@ -200,27 +1359,27 @@
     },
     {
       "date": "2026-02-13",
-      "type": "Schoolday"
+      "type": "HOL"
     },
     {
       "date": "2026-02-16",
-      "type": "Schoolday"
+      "type": "HOL"
     },
     {
       "date": "2026-02-17",
-      "type": "Schoolday"
+      "type": "HOL"
     },
     {
       "date": "2026-02-18",
-      "type": "Schoolday"
+      "type": "HOL"
     },
     {
       "date": "2026-02-19",
-      "type": "Schoolday"
+      "type": "HOL"
     },
     {
       "date": "2026-02-20",
-      "type": "Schoolday"
+      "type": "HOL"
     },
     {
       "date": "2026-02-23",
@@ -344,23 +1503,23 @@
     },
     {
       "date": "2026-04-06",
-      "type": "Schoolday"
+      "type": "HOL"
     },
     {
       "date": "2026-04-07",
-      "type": "Schoolday"
+      "type": "HOL"
     },
     {
       "date": "2026-04-08",
-      "type": "Schoolday"
+      "type": "HOL"
     },
     {
       "date": "2026-04-09",
-      "type": "Schoolday"
+      "type": "HOL"
     },
     {
       "date": "2026-04-10",
-      "type": "Schoolday"
+      "type": "HOL"
     },
     {
       "date": "2026-04-13",
@@ -484,7 +1643,7 @@
     },
     {
       "date": "2026-05-25",
-      "type": "Schoolday"
+      "type": "HOL"
     },
     {
       "date": "2026-05-26",
@@ -1452,6 +2611,42 @@
     }
   ],
   "holidays": [
+    "2025-06-19",
+    "2025-06-20",
+    "2025-07-02",
+    "2025-07-03",
+    "2025-07-04",
+    "2025-09-01",
+    "2025-11-11",
+    "2025-11-24",
+    "2025-11-25",
+    "2025-11-26",
+    "2025-11-27",
+    "2025-11-28",
+    "2025-12-01",
+    "2025-12-22",
+    "2025-12-23",
+    "2025-12-24",
+    "2025-12-25",
+    "2025-12-26",
+    "2025-12-29",
+    "2025-12-30",
+    "2025-12-31",
+    "2026-01-01",
+    "2026-01-02",
+    "2026-01-19",
+    "2026-02-13",
+    "2026-02-16",
+    "2026-02-17",
+    "2026-02-18",
+    "2026-02-19",
+    "2026-02-20",
+    "2026-04-06",
+    "2026-04-07",
+    "2026-04-08",
+    "2026-04-09",
+    "2026-04-10",
+    "2026-05-25",
     "2026-06-19",
     "2026-07-02",
     "2026-07-03",
@@ -1493,6 +2688,9 @@
     "date": "2026-06-17",
     "isSchoolDay": true,
     "currentLP": "1",
+    "currentYear": "2025 - 2026",
+    "currentSemester": "Summer Session",
+    "currentProgressReport": null,
     "dayType": "ACA"
   },
   "nextVacation": {
