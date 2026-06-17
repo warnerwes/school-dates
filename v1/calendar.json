@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "status": "placeholder",
+  "lastUpdated": null,
+  "source": "PLSIS report 2618 (Pacific Coast)",
+  "note": "Awaiting first publish from the Apps Script writer. Real data appears after the 3:15am America/Los_Angeles run.",
+  "learningPeriods": [],
+  "schoolDays": [],
+  "holidays": [],
+  "today": null,
+  "nextVacation": null
+}

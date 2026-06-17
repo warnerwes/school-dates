@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dates.warner.click — School Dates API</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 16px/1.6 system-ui, sans-serif; max-width: 46rem; margin: 3rem auto; padding: 0 1.25rem; }
+  code, pre { font-family: ui-monospace, monospace; }
+  pre { background: #8881; padding: 1rem; border-radius: .5rem; overflow:auto; }
+  a { color: #2563eb; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid #8884; }
+  .muted { opacity:.7; font-size:.9rem; }
+</style>
+</head>
+<body>
+  <h1>School Dates API</h1>
+  <p>Static, free, public JSON for Pacific Coast school dates — learning periods,
+     school days, and holidays. Published daily from PLSIS report 2618.</p>
+
+  <h2>Endpoints</h2>
+  <table>
+    <tr><th>URL</th><th>Returns</th></tr>
+    <tr><td><a href="/v1/calendar.json">/v1/calendar.json</a></td><td>Everything</td></tr>
+    <tr><td><a href="/v1/today.json">/v1/today.json</a></td><td>Is today a school day, current LP</td></tr>
+    <tr><td><a href="/v1/next-vacation.json">/v1/next-vacation.json</a></td><td>Next vacation</td></tr>
+    <tr><td><a href="/v1/health.json">/v1/health.json</a></td><td>Freshness / last run</td></tr>
+  </table>
+
+  <h2>Use it</h2>
+  <pre>const r = await fetch('https://dates.warner.click/v1/today.json');
+const today = await r.json();
+if (today.isSchoolDay) { /* ... */ }</pre>
+
+  <p class="muted">CORS-open (<code>Access-Control-Allow-Origin: *</code>).
+     Source: <a href="https://github.com/warnerwes/school-dates">github.com/warnerwes/school-dates</a></p>
+</body>
+</html>
