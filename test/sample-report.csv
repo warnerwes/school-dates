@@ -1,0 +1,10 @@
+(Time Period Sets1) Title,(Time Periods1) Title,(Time Periods1) Start Date,(Time Periods1) Finish Date,(School Days1) Day,(School Days1) Type,(Time Periods1) Period Set
+Lpset,LP1,9/2/2025,10/17/2025,,,
+Lpset,LP2,10/20/2025,12/19/2025,,,
+Lpset,LP3,1/5/2026,3/13/2026,,,
+,,,,10/7/2025,Schoolday,
+,,,,10/8/2025,Schoolday,
+,,,,10/9/2025,Schoolday,
+,,,,10/10/2025,Schoolday,
+,,,,10/14/2025,HOL,
+Schoolday,Back to School,9/1/2025,,,,Schoolday
