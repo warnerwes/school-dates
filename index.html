@@ -34,6 +34,26 @@
 const today = await r.json();
 if (today.isSchoolDay) { /* ... */ }</pre>
 
+  <h2>Spark / Robotics program dates</h2>
+  <p>School-wide dates (above) are separate from <strong>Spark/Robotics program
+     dates</strong> — session start/end, withdrawal deadlines, Learning Coach
+     orientations, and no-class windows (including <strong>State Testing</strong>).
+     Those live in a companion feed:</p>
+  <table>
+    <tr><th>URL</th><th>Returns</th></tr>
+    <tr><td><a href="https://raw.githubusercontent.com/warnerwes/spark-calendar/main/v1/spark-calendar.json">spark-calendar.json</a></td><td>Per-year sessions, withdrawals (MW/TT), orientations, no-class windows</td></tr>
+  </table>
+  <pre>const r = await fetch('https://raw.githubusercontent.com/warnerwes/spark-calendar/main/v1/spark-calendar.json');
+const cal = await r.json();
+const y = cal.years['2026-2027'];
+y.sessions;        // [{ label, begins, ends, withdrawal:[{pattern:'MW',date}, ...] }]
+y.orientations;    // [{ label, date }]
+y.noClassWindows;  // [{ label:'State Testing', start, end }]</pre>
+  <p class="muted">Need both? School closures come from this School Dates API;
+     program-specific dates come from the Spark feed. They are intentionally
+     separate sources with different lifecycles.
+     Source: <a href="https://github.com/warnerwes/spark-calendar">github.com/warnerwes/spark-calendar</a></p>
+
   <p class="muted">CORS-open (<code>Access-Control-Allow-Origin: *</code>).
      Source: <a href="https://github.com/warnerwes/school-dates">github.com/warnerwes/school-dates</a></p>
 </body>
