@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "lastUpdated": "2026-06-21T10:13:56.202Z",
-  "date": "2026-06-21",
-  "isSchoolDay": false,
+  "lastUpdated": "2026-06-22T10:13:56.516Z",
+  "date": "2026-06-22",
+  "isSchoolDay": true,
   "currentLP": "1",
   "currentYear": "2025 - 2026",
   "currentSemester": "Summer Session",
   "currentProgressReport": null,
-  "dayType": "Weekend"
+  "dayType": "ACA"
 }
