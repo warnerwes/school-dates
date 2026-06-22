@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "lastUpdated": "2026-06-21T10:13:56.202Z",
+  "lastUpdated": "2026-06-22T10:13:56.516Z",
   "source": "PLSIS report 2618 (Pacific Coast)",
   "schoolYears": [
     {
@@ -2685,19 +2685,19 @@
     "2027-04-02"
   ],
   "today": {
-    "date": "2026-06-21",
-    "isSchoolDay": false,
+    "date": "2026-06-22",
+    "isSchoolDay": true,
     "currentLP": "1",
     "currentYear": "2025 - 2026",
     "currentSemester": "Summer Session",
     "currentProgressReport": null,
-    "dayType": "Weekend"
+    "dayType": "ACA"
   },
   "nextVacation": {
     "name": "Break",
     "start": "2026-07-02",
     "end": "2026-07-06",
-    "daysUntil": 11,
+    "daysUntil": 10,
     "weekdaysOff": 3
   }
 }
