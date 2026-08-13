@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "lastUpdated": "2026-08-12T10:13:56.398Z",
-  "date": "2026-08-12",
-  "isSchoolDay": false,
-  "currentLP": null,
-  "currentYear": null,
-  "currentSemester": null,
-  "currentProgressReport": null,
-  "dayType": "Unscheduled"
+  "lastUpdated": "2026-08-13T10:13:57.006Z",
+  "date": "2026-08-13",
+  "isSchoolDay": true,
+  "currentLP": "1",
+  "currentYear": "2026 - 2027",
+  "currentSemester": "Semester 1 (Fall)",
+  "currentProgressReport": "Progress Report 1",
+  "dayType": "Schoolday"
 }
