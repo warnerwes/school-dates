@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "lastUpdated": "2026-08-29T10:13:56.033Z",
+  "lastUpdated": "2026-08-30T10:13:56.096Z",
   "source": "PLSIS report 2618 (Pacific Coast)",
   "schoolYears": [
     {
@@ -2685,7 +2685,7 @@
     "2027-04-02"
   ],
   "today": {
-    "date": "2026-08-29",
+    "date": "2026-08-30",
     "isSchoolDay": false,
     "currentLP": "1",
     "currentYear": "2026 - 2027",
@@ -2697,7 +2697,7 @@
     "name": "Break",
     "start": "2026-09-05",
     "end": "2026-09-07",
-    "daysUntil": 7,
+    "daysUntil": 6,
     "weekdaysOff": 1
   }
 }
