@@ -7,7 +7,8 @@ and holidays/vacations. Served free over GitHub Pages + CDN at:
 
 There is no server to spam and nothing to pay for: a single Google Apps Script job
 runs at **3:15am America/Los_Angeles**, pulls PLSIS report 2618, computes the
-calendar, and commits the JSON files in `v1/` to this repo. Every consuming app just
+calendar, and commits the JSON files in `v1/` to this repo as a single commit (one
+GitHub Pages build per day). Every consuming app just
 `fetch()`es a static file from the CDN. Reads never touch PLSIS.
 
 ## Endpoints

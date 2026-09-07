@@ -16,7 +16,9 @@ this repo (served at https://dates.warner.click/v1/).
 - [x] Authorized (consent granted) and first `main()` run published real data
 - [ ] **Daily trigger** — Triggers (⏰) → Add Trigger → function `main`,
       Time-driven → Day timer → **3am–4am**, failure notification: daily
-- [ ] Custom-domain HTTPS cert (auto-provisioning) → enable Enforce HTTPS
+- [x] Custom-domain HTTPS cert (auto-provisioning) → enable Enforce HTTPS
+      (done 2026-09-07: issuance had stalled; removing and re-adding the custom domain
+      in Settings → Pages restarted it, cert approved within a minute, Enforce HTTPS on)
 
 ## Secrets
 
@@ -40,4 +42,5 @@ and leaves the previous good files in place.
 
 Edit `gas-project/Code.js`, then `cd gas-project && clasp push`. The repo logic
 mirror in `test/calendar-logic.js` is kept in sync and covered by
-`node test/validate.js`.
+`node test/validate.js`. The single-commit GitHub publish sequence is covered by
+`node test/github-publish.js` (fake UrlFetchApp, no network).

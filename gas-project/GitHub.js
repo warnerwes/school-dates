@@ -1,83 +1,91 @@
 /**
  * GitHub publishing for the School Dates Writer.
- * Extracted verbatim from Code.js; shares the global scope (GITHUB_REPO, GITHUB_BRANCH, truncate_).
+ * Shares the Apps Script global scope with Code.js (GITHUB_REPO, GITHUB_BRANCH, truncate_).
+ *
+ * Every output file is written in ONE commit via the Git Data API
+ * (ref -> base tree -> new tree -> commit -> ref update). One push per run means
+ * one GitHub Pages build. The previous one-commit-per-file approach started four
+ * Pages builds a few seconds apart and GitHub cancelled three of them every day,
+ * which surfaced as daily "cancelled workflow" notifications.
  */
 
 /**
- * Publishes one file to the configured GitHub repo via the Contents API.
+ * Publishes every entry in `files` ([{ path, content }]) as a single commit on
+ * GITHUB_BRANCH and returns the new commit sha. Throws on any non-2xx response.
  */
-function publishFile(path, contentString, githubPat, isoTimestamp) {
-  var url = 'https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + encodePath_(path) +
-    '?ref=' + encodeURIComponent(GITHUB_BRANCH);
-  var headers = {
-    Authorization: 'token ' + githubPat,
-    Accept: 'application/vnd.github+json',
-    'User-Agent': 'Google-Apps-Script-school-dates-writer'
-  };
+function publishFiles_(files, githubPat, message) {
+  if (!files || !files.length) {
+    throw new Error('publishFiles_ called with no files');
+  }
+  var base = 'https://api.github.com/repos/' + GITHUB_REPO;
+  var branch = encodeURIComponent(GITHUB_BRANCH);
 
-  var existingSha = null;
-  var getResponse = UrlFetchApp.fetch(url, {
-    method: 'get',
-    headers: headers,
-    muteHttpExceptions: true
+  var headRef = gitHubJson_(base + '/git/ref/heads/' + branch, 'get', null, githubPat);
+  var headSha = headRef.object && headRef.object.sha;
+  if (!headSha) {
+    throw new Error('GitHub ref lookup returned no sha for ' + GITHUB_BRANCH);
+  }
+
+  var headCommit = gitHubJson_(base + '/git/commits/' + headSha, 'get', null, githubPat);
+  var baseTreeSha = headCommit.tree && headCommit.tree.sha;
+  if (!baseTreeSha) {
+    throw new Error('GitHub commit lookup returned no tree sha for ' + headSha);
+  }
+
+  var treeEntries = files.map(function(file) {
+    return { path: file.path, mode: '100644', type: 'blob', content: file.content };
   });
-  var getStatus = getResponse.getResponseCode();
+  var tree = gitHubJson_(base + '/git/trees', 'post', {
+    base_tree: baseTreeSha,
+    tree: treeEntries
+  }, githubPat);
 
-  if (getStatus === 200) {
-    var getPayload = JSON.parse(getResponse.getContentText());
-    existingSha = getPayload.sha || null;
-  } else if (getStatus !== 404) {
-    throw new Error('GitHub GET failed for ' + path + ' with HTTP ' + getStatus + ': ' +
-      truncate_(getResponse.getContentText(), 1000));
-  }
+  var commit = gitHubJson_(base + '/git/commits', 'post', {
+    message: message,
+    tree: tree.sha,
+    parents: [headSha]
+  }, githubPat);
 
-  var putPayload = {
-    message: 'publish ' + path + ' ' + isoTimestamp,
-    content: Utilities.base64Encode(contentString, Utilities.Charset.UTF_8),
-    branch: GITHUB_BRANCH
-  };
-  if (existingSha) {
-    putPayload.sha = existingSha;
-  }
+  gitHubJson_(base + '/git/refs/heads/' + branch, 'patch', {
+    sha: commit.sha,
+    force: false
+  }, githubPat);
 
-  var putResponse = UrlFetchApp.fetch(url, {
-    method: 'put',
-    headers: headers,
-    contentType: 'application/json',
-    payload: JSON.stringify(putPayload),
-    muteHttpExceptions: true
-  });
-  var putStatus = putResponse.getResponseCode();
-
-  if (putStatus < 200 || putStatus >= 300) {
-    throw new Error('GitHub PUT failed for ' + path + ' with HTTP ' + putStatus + ': ' +
-      truncate_(putResponse.getContentText(), 1000));
-  }
+  return commit.sha;
 }
 
 /**
- * Verifies GitHub auth in setup() without publishing anything.
+ * Performs one GitHub REST call and returns the parsed JSON body; throws on non-2xx.
  */
-function verifyGitHubAccess_(githubPat) {
-  var response = UrlFetchApp.fetch('https://api.github.com/repos/' + GITHUB_REPO, {
-    method: 'get',
+function gitHubJson_(url, method, payload, githubPat) {
+  var options = {
+    method: method,
     headers: {
       Authorization: 'token ' + githubPat,
       Accept: 'application/vnd.github+json',
       'User-Agent': 'Google-Apps-Script-school-dates-writer'
     },
     muteHttpExceptions: true
-  });
+  };
+  if (payload) {
+    options.contentType = 'application/json';
+    options.payload = JSON.stringify(payload);
+  }
+
+  var response = UrlFetchApp.fetch(url, options);
   var status = response.getResponseCode();
+  var body = response.getContentText();
 
   if (status < 200 || status >= 300) {
-    throw new Error('GitHub auth check failed with HTTP ' + status + ': ' +
-      truncate_(response.getContentText(), 500));
+    throw new Error('GitHub ' + method.toUpperCase() + ' ' + url + ' failed with HTTP ' + status + ': ' +
+      truncate_(body, 1000));
   }
+  return body ? JSON.parse(body) : {};
 }
 
-function encodePath_(path) {
-  return path.split('/').map(function(segment) {
-    return encodeURIComponent(segment);
-  }).join('/');
+/**
+ * Verifies GitHub auth in setup() without publishing anything.
+ */
+function verifyGitHubAccess_(githubPat) {
+  gitHubJson_('https://api.github.com/repos/' + GITHUB_REPO, 'get', null, githubPat);
 }

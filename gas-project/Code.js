@@ -2,14 +2,19 @@
  * Daily publisher for school calendar JSON derived from the PLSIS report.
  * Google Apps Script V8 runtime only.
  *
- * Runs on a daily time-driven trigger (3:15am America/Los_Angeles) in the
- * robo-spark-attendance Apps Script project. Pulls PLSIS report 2618, parses it
- * into a school calendar, computes derived fields, and publishes JSON files to
- * github.com/warnerwes/school-dates (served at https://dates.warner.click/v1/).
+ * Runs on a daily time-driven trigger (3-4am America/Los_Angeles) in the
+ * standalone "School Dates Writer" Apps Script project (clasp-managed from this
+ * repo). Pulls PLSIS report 2618, parses it into a school calendar, computes
+ * derived fields, and publishes the JSON files to github.com/warnerwes/school-dates
+ * (served at https://dates.warner.click/v1/) as ONE commit per run (GitHub.js).
+ *
+ * Files: Code.js (entry points + calendar derivation), ReportParse.js (CSV parse),
+ * GitHub.js (single-commit publish via the Git Data API).
  *
  * Secrets live in Script Properties, never in source:
  *   PLSIS_PASSWORD  - the PLSIS account password
- *   GITHUB_PAT      - fine-grained token, contents:write on warnerwes/school-dates
+ *   GITHUB_PAT      - fine-grained token, Contents: read+write on warnerwes/school-dates
+ *                     (the Git Data endpoints are covered by the Contents permission)
  *
  * Run setup() once by hand to validate properties + fetch + GitHub auth without
  * publishing. Set the daily trigger on main().
@@ -66,10 +71,13 @@ function main() {
     );
     var outputs = buildOutputFiles_(calendarPayload, isoTimestamp);
 
-    publishFile(OUTPUT_PREFIX + 'calendar.json', outputs.calendar, secrets.githubPat, isoTimestamp);
-    publishFile(OUTPUT_PREFIX + 'today.json', outputs.today, secrets.githubPat, isoTimestamp);
-    publishFile(OUTPUT_PREFIX + 'next-vacation.json', outputs.nextVacation, secrets.githubPat, isoTimestamp);
-    publishFile(OUTPUT_PREFIX + 'health.json', outputs.health, secrets.githubPat, isoTimestamp);
+    // One commit for all four files: one push -> one GitHub Pages build per run.
+    publishFiles_([
+      { path: OUTPUT_PREFIX + 'calendar.json', content: outputs.calendar },
+      { path: OUTPUT_PREFIX + 'today.json', content: outputs.today },
+      { path: OUTPUT_PREFIX + 'next-vacation.json', content: outputs.nextVacation },
+      { path: OUTPUT_PREFIX + 'health.json', content: outputs.health }
+    ], secrets.githubPat, 'publish v1 ' + isoTimestamp);
   } catch (err) {
     var errorMessage = buildErrorMessage_(err);
 
@@ -82,7 +90,8 @@ function main() {
         error: errorMessage,
         source: SOURCE_NAME
       }, null, 2);
-      publishFile(OUTPUT_PREFIX + 'health.json', failureHealth, failureSecrets.githubPat, isoTimestamp);
+      publishFiles_([{ path: OUTPUT_PREFIX + 'health.json', content: failureHealth }],
+        failureSecrets.githubPat, 'publish v1/health.json (run FAILED) ' + isoTimestamp);
     } catch (publishErr) {
       Logger.log('Failed to publish failure health.json: ' + buildErrorMessage_(publishErr));
     }
