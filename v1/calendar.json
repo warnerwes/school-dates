@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "lastUpdated": "2026-09-11T10:13:56.314Z",
+  "lastUpdated": "2026-09-12T10:13:57.105Z",
   "source": "PLSIS report 2618 (Pacific Coast)",
   "schoolYears": [
     {
@@ -2685,19 +2685,19 @@
     "2027-04-02"
   ],
   "today": {
-    "date": "2026-09-11",
-    "isSchoolDay": true,
-    "currentLP": "1",
+    "date": "2026-09-12",
+    "isSchoolDay": false,
+    "currentLP": null,
     "currentYear": "2026 - 2027",
     "currentSemester": "Semester 1 (Fall)",
     "currentProgressReport": "Progress Report 1",
-    "dayType": "Schoolday"
+    "dayType": "Weekend"
   },
   "nextVacation": {
     "name": "Holiday",
     "start": "2026-11-11",
     "end": "2026-11-11",
-    "daysUntil": 61,
+    "daysUntil": 60,
     "weekdaysOff": 1
   }
 }
