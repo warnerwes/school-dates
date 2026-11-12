@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "lastUpdated": "2026-11-11T11:13:56.309Z",
-  "date": "2026-11-11",
-  "isSchoolDay": false,
+  "lastUpdated": "2026-11-12T11:13:56.629Z",
+  "date": "2026-11-12",
+  "isSchoolDay": true,
   "currentLP": "3",
   "currentYear": "2026 - 2027",
   "currentSemester": "Semester 1 (Fall)",
   "currentProgressReport": null,
-  "dayType": "HOL"
+  "dayType": "Schoolday"
 }
