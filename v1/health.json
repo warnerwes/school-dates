@@ -1,14 +1,7 @@
 {
   "version": 1,
-  "lastUpdated": "2026-11-17T11:13:56.100Z",
-  "lastRunOk": true,
-  "source": "PLSIS report 2618 (Pacific Coast)",
-  "counts": {
-    "schoolYears": 4,
-    "semesters": 7,
-    "progressReports": 5,
-    "learningPeriods": 22,
-    "schoolDays": 583,
-    "holidays": 72
-  }
+  "lastUpdated": "2026-11-18T11:13:56.053Z",
+  "lastRunOk": false,
+  "error": "Error: PLSIS fetch failed with HTTP 401: <!-- Gradebook:ReachedLoginPage -->\n\n<!DOCTYPE html>\n<html lang=\"en\">\n\t<head>\n\t\t<meta charset=\"utf-8\">\n\t\t<meta name=\"viewport\" content=\"width=300, initial-scale=1\">\n\t\t<title>Login - School Pathways</title>\n\t\t<meta name=\"csrf-token\" content=\"TRfMvuC0GH05mCzuBoEiuyYUcYRVPWu62EApmRJoJxF7_YeDNfhdJEOoFdpNzg7kV0lGWIauKLWUAc02AkVzhoFV\">\n\t\t<meta name=\"sp-window-id\" content=\"1116569136\">\n\t\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n\t\t<link rel=\"shortcut icon\" href=\"/favicon_prod.ico\">\n\t\t<link ...\n    at fetchReport_ (Code:225:11)\n    at main (Code:62:19)\n    at __GS_INTERNAL_top_function_call__.gs:1:8",
+  "source": "PLSIS report 2618 (Pacific Coast)"
 }
