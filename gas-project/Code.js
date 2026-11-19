@@ -8,11 +8,11 @@
  * derived fields, and publishes the JSON files to github.com/warnerwes/school-dates
  * (served at https://dates.warner.click/v1/) as ONE commit per run (GitHub.js).
  *
- * Files: Code.js (entry points + calendar derivation), ReportParse.js (CSV parse),
- * GitHub.js (single-commit publish via the Git Data API).
+ * CalendarJson.js formats the calendar, ReportParse.js parses the CSV, and
+ * GitHub.js publishes all outputs together through the Git Data API.
  *
  * Secrets live in Script Properties, never in source:
- *   PLSIS_PASSWORD  - the PLSIS account password
+ *   PLSIS_EXPORT_TOKEN - the private _export_token from saved report 2618
  *   GITHUB_PAT      - fine-grained token, Contents: read+write on warnerwes/school-dates
  *                     (the Git Data endpoints are covered by the Contents permission)
  *
@@ -20,7 +20,6 @@
  * publishing. Set the daily trigger on main().
  */
 
-var PLSIS_LOGIN = 'dqx2618';
 var PLSIS_REPORT_ID = '2618';
 var PLSIS_SCOPE = 'pacificcoast';
 var GITHUB_REPO = 'warnerwes/school-dates';
@@ -56,10 +55,11 @@ var NON_SCHOOL_TYPES = { HOL: true, OTH: true };
 function main() {
   var isoTimestamp = new Date().toISOString();
   var alertEmail = getAlertEmail_();
+  var githubPat;
 
   try {
-    var secrets = getSecrets_();
-    var csvText = fetchReport_(secrets.plsisPassword);
+    githubPat = getRequiredProperty_('GITHUB_PAT');
+    var csvText = fetchReport_();
     var parsed = parseReportCsv_(csvText);
     var calendarPayload = buildCalendarPayload_(
       parsed.schoolYears,
@@ -77,23 +77,24 @@ function main() {
       { path: OUTPUT_PREFIX + 'today.json', content: outputs.today },
       { path: OUTPUT_PREFIX + 'next-vacation.json', content: outputs.nextVacation },
       { path: OUTPUT_PREFIX + 'health.json', content: outputs.health }
-    ], secrets.githubPat, 'publish v1 ' + isoTimestamp);
+    ], githubPat, 'publish v1 ' + isoTimestamp);
   } catch (err) {
     var errorMessage = buildErrorMessage_(err);
 
-    try {
-      var failureSecrets = getSecrets_();
-      var failureHealth = JSON.stringify({
-        version: 1,
-        lastUpdated: isoTimestamp,
-        lastRunOk: false,
-        error: errorMessage,
-        source: SOURCE_NAME
-      }, null, 2);
-      publishFiles_([{ path: OUTPUT_PREFIX + 'health.json', content: failureHealth }],
-        failureSecrets.githubPat, 'publish v1/health.json (run FAILED) ' + isoTimestamp);
-    } catch (publishErr) {
-      Logger.log('Failed to publish failure health.json: ' + buildErrorMessage_(publishErr));
+    if (githubPat) {
+      try {
+        var failureHealth = JSON.stringify({
+          version: 1,
+          lastUpdated: isoTimestamp,
+          lastRunOk: false,
+          error: errorMessage,
+          source: SOURCE_NAME
+        }, null, 2);
+        publishFiles_([{ path: OUTPUT_PREFIX + 'health.json', content: failureHealth }],
+          githubPat, 'publish v1/health.json (run FAILED) ' + isoTimestamp);
+      } catch (publishErr) {
+        Logger.log('Failed to publish failure health.json: ' + buildErrorMessage_(publishErr));
+      }
     }
 
     try {
@@ -111,8 +112,7 @@ function main() {
  * Logs counts and derived data without publishing any files.
  */
 function setup() {
-  var secrets = getSecrets_();
-  var csvText = fetchReport_(secrets.plsisPassword);
+  var csvText = fetchReport_();
   var parsed = parseReportCsv_(csvText);
   var calendarPayload = buildCalendarPayload_(
     parsed.schoolYears,
@@ -123,7 +123,7 @@ function setup() {
     new Date().toISOString()
   );
 
-  verifyGitHubAccess_(secrets.githubPat);
+  verifyGitHubAccess_(getRequiredProperty_('GITHUB_PAT'));
 
   Logger.log(JSON.stringify({
     source: SOURCE_NAME,
@@ -144,8 +144,7 @@ function setup() {
  * Run this by hand to discover the report's real vocabulary; publishes nothing.
  */
 function inspect() {
-  var secrets = getSecrets_();
-  var csvText = fetchReport_(secrets.plsisPassword);
+  var csvText = fetchReport_();
   var parsed = parseReportCsv_(csvText);
 
   var typeCounts = {};
@@ -172,22 +171,12 @@ function inspect() {
 /**
  * Reads required Script Properties and throws clear errors if missing.
  */
-function getSecrets_() {
-  var properties = PropertiesService.getScriptProperties();
-  var plsisPassword = properties.getProperty('PLSIS_PASSWORD');
-  var githubPat = properties.getProperty('GITHUB_PAT');
-
-  if (!plsisPassword) {
-    throw new Error('Missing Script Property: PLSIS_PASSWORD');
+function getRequiredProperty_(name) {
+  var value = PropertiesService.getScriptProperties().getProperty(name);
+  if (!value) {
+    throw new Error('Missing Script Property: ' + name);
   }
-  if (!githubPat) {
-    throw new Error('Missing Script Property: GITHUB_PAT');
-  }
-
-  return {
-    plsisPassword: plsisPassword,
-    githubPat: githubPat
-  };
+  return value;
 }
 
 /**
@@ -206,26 +195,32 @@ function getAlertEmail_() {
 /**
  * Fetches the PLSIS report CSV and throws on non-200 responses.
  */
-function fetchReport_(password) {
+function fetchReport_() {
+  var exportToken = getRequiredProperty_('PLSIS_EXPORT_TOKEN');
   var url = 'https://pacificcoast.plsis.com/mod.php/admin/dataexport.php' +
     '?action%5BRunReport%5D=1' +
     '&_nosession=true' +
     '&_scope=' + encodeURIComponent(PLSIS_SCOPE) +
-    '&_login=' + encodeURIComponent(PLSIS_LOGIN) +
-    '&_password=' + encodeURIComponent(password) +
+    '&_export_token=' + encodeURIComponent(exportToken) +
     '&report_id=' + encodeURIComponent(PLSIS_REPORT_ID);
 
-  var response = UrlFetchApp.fetch(url, {
-    muteHttpExceptions: true
-  });
-  var status = response.getResponseCode();
-  var body = response.getContentText();
-
-  if (status !== 200) {
-    throw new Error('PLSIS fetch failed with HTTP ' + status + ': ' + truncate_(body, 500));
+  var response;
+  try {
+    response = UrlFetchApp.fetch(url, { muteHttpExceptions: true, followRedirects: false });
+  } catch (err) {
+    // UrlFetch exceptions can quote the private request URL.
+    throw new Error('PLSIS report 2618 could not be reached.');
   }
-  if (!body) {
+  var status = response.getResponseCode();
+  if (status !== 200) {
+    throw new Error('PLSIS report 2618 returned HTTP ' + status);
+  }
+  var body = response.getContentText();
+  if (!body.trim()) {
     throw new Error('PLSIS fetch returned an empty body with HTTP ' + status);
+  }
+  if (/^\s*</.test(body)) {
+    throw new Error('PLSIS report 2618 returned HTML instead of calendar CSV.');
   }
 
   return body;
@@ -267,7 +262,7 @@ function buildOutputFiles_(calendarPayload, isoTimestamp) {
   };
 
   return {
-    calendar: JSON.stringify(calendarPayload, null, 2),
+    calendar: formatCalendarJson_(calendarPayload),
     today: JSON.stringify({
       version: 1,
       lastUpdated: isoTimestamp,
@@ -566,17 +561,9 @@ function safeTrim_(value) {
   return value == null ? '' : String(value).trim();
 }
 
-function truncate_(value, maxLength) {
-  var text = value == null ? '' : String(value);
-  return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
-}
-
 function buildErrorMessage_(err) {
   if (!err) {
     return 'Unknown error';
-  }
-  if (err.stack) {
-    return String(err.stack);
   }
   if (err.message) {
     return String(err.message);

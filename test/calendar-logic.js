@@ -1,3 +1,4 @@
+const formatCalendarJson = require('../gas-project/CalendarJson.js');
 const TIMEZONE = 'America/Los_Angeles';
 const SOURCE_NAME = 'PLSIS report 2618 (Pacific Coast)';
 
@@ -151,7 +152,7 @@ function buildOutputFiles(calendarPayload, isoTimestamp) {
   };
 
   return {
-    calendar: JSON.stringify(calendarPayload, null, 2),
+    calendar: formatCalendarJson(calendarPayload),
     today: JSON.stringify({
       version: 1,
       lastUpdated: isoTimestamp,

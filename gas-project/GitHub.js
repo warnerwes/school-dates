@@ -1,6 +1,6 @@
 /**
  * GitHub publishing for the School Dates Writer.
- * Shares the Apps Script global scope with Code.js (GITHUB_REPO, GITHUB_BRANCH, truncate_).
+ * Shares the Apps Script global scope with Code.js (GITHUB_REPO, GITHUB_BRANCH).
  *
  * Every output file is written in ONE commit via the Git Data API
  * (ref -> base tree -> new tree -> commit -> ref update). One push per run means
@@ -74,12 +74,10 @@ function gitHubJson_(url, method, payload, githubPat) {
 
   var response = UrlFetchApp.fetch(url, options);
   var status = response.getResponseCode();
-  var body = response.getContentText();
-
   if (status < 200 || status >= 300) {
-    throw new Error('GitHub ' + method.toUpperCase() + ' ' + url + ' failed with HTTP ' + status + ': ' +
-      truncate_(body, 1000));
+    throw new Error('GitHub ' + method.toUpperCase() + ' ' + url + ' failed with HTTP ' + status);
   }
+  var body = response.getContentText();
   return body ? JSON.parse(body) : {};
 }
 

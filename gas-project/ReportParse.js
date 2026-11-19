@@ -10,7 +10,12 @@ function parseReportCsv_(csvText) {
   // Strip a leading UTF-8 BOM so the first header name matches exactly.
   csvText = csvText.replace(/^﻿/, '');
 
-  var rows = Utilities.parseCsv(csvText);
+  var rows;
+  try {
+    rows = Utilities.parseCsv(csvText);
+  } catch (err) {
+    throw new Error('PLSIS report 2618 returned invalid CSV.');
+  }
   if (!rows || rows.length < 2) {
     throw new Error('PLSIS CSV did not contain a header row plus data rows');
   }

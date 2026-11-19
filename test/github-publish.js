@@ -26,7 +26,6 @@ function fakeFetch(url, options) {
 const sandbox = {
   GITHUB_REPO: 'warnerwes/school-dates',
   GITHUB_BRANCH: 'main',
-  truncate_: (v, n) => String(v).slice(0, n),
   UrlFetchApp: { fetch: fakeFetch },
   JSON, Error
 };

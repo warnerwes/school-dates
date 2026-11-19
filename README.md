@@ -52,9 +52,10 @@ same data so a frequent poller fetches a few bytes instead of the whole year.
 
 ## How it's published
 
-`gas-project/Code.js` (source of truth for the writer) runs on a daily time trigger in a dedicated standalone Apps Script project. Secrets — the PLSIS password
-and a GitHub fine-grained PAT (contents:write on this repo only) — live in Script
-Properties, never in source. On failure the job emails an alert and leaves the prior
+`gas-project/Code.js` runs on a daily time trigger in a dedicated standalone Apps Script project.
+It downloads saved report 2618 using the report link’s private export token.
+The export token and the GitHub publishing token live in Apps Script Properties.
+On failure the job emails an alert and leaves the prior
 files live (last-known-good).
 
 ## Consumers
