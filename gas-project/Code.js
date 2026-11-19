@@ -59,6 +59,7 @@ function main() {
 
   try {
     githubPat = getRequiredProperty_('GITHUB_PAT');
+    removeLegacyReportCredentials_();
     var csvText = fetchReport_();
     var parsed = parseReportCsv_(csvText);
     var calendarPayload = buildCalendarPayload_(
@@ -177,6 +178,18 @@ function getRequiredProperty_(name) {
     throw new Error('Missing Script Property: ' + name);
   }
   return value;
+}
+
+// Existing installations may still have the credentials used by the old export.
+// Delete by key so the old values never have to be read or logged.
+function removeLegacyReportCredentials_() {
+  var properties = PropertiesService.getScriptProperties();
+  var obsolete = ['PLSIS_PASSWORD', 'PLSIS_LOGIN', 'PLSIS_USERNAME'];
+  properties.getKeys().forEach(function(key) {
+    if (obsolete.indexOf(key) !== -1) {
+      properties.deleteProperty(key);
+    }
+  });
 }
 
 /**

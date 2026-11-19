@@ -27,6 +27,8 @@ Both live in **Project Settings → Script Properties** (never in source):
 | `PLSIS_EXPORT_TOKEN` | The value of `_export_token` from the School Pathways export link for saved report 2618 |
 | `GITHUB_PAT` | fine-grained PAT, Contents:write on `warnerwes/school-dates` (1-yr expiry — set a rotation reminder) |
 
+On upgrade, `main()` removes the obsolete report login and password settings by name.
+
 ## Functions
 
 - `main()` — fetch → parse → derive → publish the four `v1/*.json`. Daily trigger target.

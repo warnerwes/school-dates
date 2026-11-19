@@ -13,6 +13,7 @@ const exportToken = 'fixture-only+/=&';
 const html = '<html><meta name="csrf-token" content="private-page-marker"></html>';
 
 function makeWriter(properties, fetch) {
+  const stored = { ...properties };
   const publications = [];
   const alerts = [];
   const reads = [];
@@ -20,8 +21,10 @@ function makeWriter(properties, fetch) {
     PropertiesService: { getScriptProperties: () => ({
       getProperty(key) {
         reads.push(key);
-        return properties[key] || null;
-      }
+        return stored[key] || null;
+      },
+      getKeys: () => Object.keys(stored),
+      deleteProperty: key => { delete stored[key]; }
     }) },
     UrlFetchApp: { fetch },
     Session: { getEffectiveUser: () => ({ getEmail: () => 'owner@example.invalid' }) },
@@ -35,7 +38,7 @@ function makeWriter(properties, fetch) {
     assert.equal(pat, 'test-publish');
     publications.push(files);
   };
-  return { context, publications, alerts, reads };
+  return { context, publications, alerts, reads, stored };
 }
 
 const configured = { PLSIS_EXPORT_TOKEN: exportToken, GITHUB_PAT: 'test-publish' };
@@ -90,6 +93,18 @@ test('a missing export token still updates health without attempting a report re
   assert.throws(() => writer.context.main(), { message: expected });
   assert.deepEqual(writer.reads, ['GITHUB_PAT', 'PLSIS_EXPORT_TOKEN']);
   assert.equal(JSON.parse(writer.publications[0][0].content).error, expected);
+});
+
+test('main retires only the old report credentials, even before a replacement token is set', () => {
+  const writer = makeWriter({
+    GITHUB_PAT: 'test-publish', PLSIS_PASSWORD: 'retired-fixture',
+    PLSIS_LOGIN: 'report-fixture', PLSIS_USERNAME: 'report-fixture', KEEP: 'untouched'
+  }, () => assert.fail('unexpected request'));
+  for (let i = 0; i < 2; i++) {
+    assert.throws(() => writer.context.main(), /Missing Script Property: PLSIS_EXPORT_TOKEN/);
+    assert.deepEqual(writer.stored, { GITHUB_PAT: 'test-publish', KEEP: 'untouched' });
+  }
+  assert.ok(writer.reads.every(key => key === 'GITHUB_PAT' || key === 'PLSIS_EXPORT_TOKEN'));
 });
 
 test('a CSV parser exception cannot publish the original response', () => {
