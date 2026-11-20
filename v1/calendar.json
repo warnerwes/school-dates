@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "lastUpdated": "2026-11-19T20:02:37.444Z",
+  "lastUpdated": "2026-11-20T11:13:56.548Z",
   "source": "PLSIS report 2618 (Pacific Coast)",
   "schoolYears": [
     {"localId":"5393","title":"2024 - 2025","start":"2025-06-16","end":"2025-07-25","track":"B"},
@@ -707,6 +707,6 @@
     "2027-04-01",
     "2027-04-02"
   ],
-  "today": {"date":"2026-11-19","isSchoolDay":true,"currentLP":"4","currentYear":"2026 - 2027","currentSemester":"Semester 1 (Fall)","currentProgressReport":null,"dayType":"Schoolday"},
-  "nextVacation": {"name":"Break","start":"2026-11-21","end":"2026-11-30","daysUntil":2,"weekdaysOff":6}
+  "today": {"date":"2026-11-20","isSchoolDay":true,"currentLP":"4","currentYear":"2026 - 2027","currentSemester":"Semester 1 (Fall)","currentProgressReport":null,"dayType":"Schoolday"},
+  "nextVacation": {"name":"Break","start":"2026-11-21","end":"2026-11-30","daysUntil":1,"weekdaysOff":6}
 }
